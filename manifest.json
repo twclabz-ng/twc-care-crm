@@ -1,0 +1,62 @@
+{
+  "id": "./",
+  "name": "TWC CareCRM - Healthcare PWA",
+  "short_name": "TWC CRM",
+  "description": "Hospital CRM for Sales, Marketing & Care teams with WhatsApp automation, Google Suite sync, and NDPA compliance.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#045d6e",
+  "background_color": "#045d6e",
+  "categories": ["medical", "business", "productivity"],
+  "icons": [
+    {
+      "src": "./pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pipeline Deals",
+      "short_name": "Pipeline",
+      "description": "View and manage clinical deals and referrals",
+      "url": "./#pipeline",
+      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Care Tickets",
+      "short_name": "Tickets",
+      "description": "Hospital support and care tickets",
+      "url": "./#tickets",
+      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Google Suite Hub",
+      "short_name": "Google Suite",
+      "description": "Google Sheets, Drive and Apps Script integration",
+      "url": "./#google_suite",
+      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
