@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>TWC CareCRM - Healthcare PWA</title>
+    <meta name="description" content="Hospital CRM for Sales, Marketing & Care teams with WhatsApp automation, Google Suite sync, and NDPA compliance." />
+    <meta property="og:title" content="TWC CareCRM - Healthcare PWA" />
+    <meta property="og:description" content="Hospital CRM for Sales, Marketing & Care teams with WhatsApp automation, Google Suite sync, and NDPA compliance." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./pwa-512x512.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#045d6e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TWC CRM" />
+
+    <!-- WebSocket Error Guard for Preview Environments & Sandboxed iFrames -->
+    <script>
+      (function() {
+        if (typeof window !== 'undefined') {
+          window.addEventListener('error', function(event) {
+            if (event && event.message && (
+              event.message.indexOf('WebSocket') !== -1 ||
+              event.message.indexOf('websocket') !== -1 ||
+              event.message.indexOf('failed to connect') !== -1
+            )) {
+              event.stopImmediatePropagation();
+              event.preventDefault();
+            }
+          }, true);
+
+          try {
+            var NativeWS = window.WebSocket;
+            if (NativeWS) {
+              window.WebSocket = function(url, protocols) {
+                try {
+                  var instance = protocols ? new NativeWS(url, protocols) : new NativeWS(url);
+                  instance.addEventListener('error', function(err) {
+                    if (err && err.stopPropagation) err.stopPropagation();
+                  });
+                  return instance;
+                } catch (e) {
+                  return {
+                    addEventListener: function() {},
+                    removeEventListener: function() {},
+                    send: function() {},
+                    close: function() {},
+                    readyState: 3
+                  };
+                }
+              };
+              window.WebSocket.prototype = NativeWS.prototype;
+              window.WebSocket.CONNECTING = NativeWS.CONNECTING;
+              window.WebSocket.OPEN = NativeWS.OPEN;
+              window.WebSocket.CLOSING = NativeWS.CLOSING;
+              window.WebSocket.CLOSED = NativeWS.CLOSED;
+            }
+          } catch (e) {}
+        }
+      })();
+    </script>
+
+    <!-- PWA Icons & Manifest (Relative for GitHub Pages Subpath Resilience) -->
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#045d6e] selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      <div style="padding: 24px; text-align: center; font-family: sans-serif; color: #045d6e;">
+        <h2>TWC CareCRM Requires JavaScript</h2>
+        <p>Please enable JavaScript to access the hospital management and sales pipeline PWA.</p>
+      </div>
+    </noscript>
+  </body>
+</html>
