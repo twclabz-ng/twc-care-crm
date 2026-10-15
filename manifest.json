@@ -7,56 +7,50 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#045d6e",
-  "background_color": "#045d6e",
+  "background_color": "#F2F2F7",
+  "theme_color": "#045D6E",
   "categories": ["medical", "business", "productivity"],
   "icons": [
-    {
-      "src": "./pwa-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./pwa-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./pwa-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
     {
       "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "shortcuts": [
     {
-      "name": "Pipeline Deals",
+      "name": "Pipeline Kanban",
       "short_name": "Pipeline",
-      "description": "View and manage clinical deals and referrals",
       "url": "./#pipeline",
-      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
     },
     {
-      "name": "Care Tickets",
-      "short_name": "Tickets",
-      "description": "Hospital support and care tickets",
-      "url": "./#tickets",
-      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
+      "name": "WhatsApp Hub",
+      "short_name": "WhatsApp",
+      "url": "./#whatsapp",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
     },
     {
-      "name": "Google Suite Hub",
-      "short_name": "Google Suite",
-      "description": "Google Sheets, Drive and Apps Script integration",
-      "url": "./#google_suite",
-      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
+      "name": "New Patient Lead",
+      "short_name": "Add Lead",
+      "url": "./#new-lead",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
     }
   ]
 }
