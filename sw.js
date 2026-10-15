@@ -4,89 +4,72 @@ const CACHE_NAME = 'twc-carecrm-v3';
 // Dynamically compute GitHub Pages subpath (e.g. /my-repo/ or /)
 const basePath = self.location.pathname.replace(/\/sw\.js$/, '') || '';
 
-const PRECACHE_ASSETS = [
+const STATIC_ASSETS = [
   basePath + '/',
   basePath + '/index.html',
   basePath + '/manifest.json',
   basePath + '/icon.svg',
+  basePath + '/apple-touch-icon.png',
   basePath + '/pwa-192x192.png',
-  basePath + '/pwa-512x512.png',
-  basePath + '/apple-touch-icon.png'
+  basePath + '/pwa-512x512.png'
 ];
 
-// Install: Cache critical shell assets resiliently
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return Promise.allSettled(
-        PRECACHE_ASSETS.map((asset) =>
-          fetch(asset, { cache: 'no-cache' })
-            .then((res) => {
-              if (res.ok) return cache.put(asset, res);
-            })
-            .catch(() => {
-              // Silently continue if an asset isn't ready during initial build
-            })
-        )
-      );
-    }).then(() => self.skipWaiting())
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('TWC CareCRM SW: Pre-caching partial assets:', err);
+      });
+    })
   );
+  self.skipWaiting();
 });
 
-// Activate: Clean up previous cache versions and claim immediate client control
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
-// Fetch: Network-first for dynamic content with robust cache fallback for offline usage
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const request = event.request;
 
-  const requestUrl = new URL(event.request.url);
+  if (request.method !== 'GET') return;
 
-  // Ignore cross-origin API calls (like Google Apps Script, Google Drive, fonts) for caching to avoid CORS issues
-  if (requestUrl.origin !== self.location.origin) return;
+  const url = new URL(request.url);
 
+  // Network-First for Google Apps Script Webhook API calls
+  if (url.hostname.includes('script.google.com') || url.hostname.includes('google.com')) {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for CSS, JS, fonts, and images
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // If offline and request is an HTML page navigation, return cached entry point
-          if (event.request.mode === 'navigate') {
-            return (
-              caches.match(basePath + '/') ||
-              caches.match(basePath + '/index.html') ||
-              caches.match('/index.html')
-            );
-          }
-          return cachedResponse;
-        });
+    caches.match(request).then((cachedResponse) => {
+      const fetchPromise = fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseToCache);
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
+        // Fallback to cached index.html for SPA routes
+        if (request.headers.get('accept')?.includes('text/html')) {
+          return caches.match(basePath + '/index.html') || caches.match('./index.html');
+        }
+      });
 
       return cachedResponse || fetchPromise;
     })
   );
-});
-
-// Listen for skip waiting messages from PWA update prompts
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });
