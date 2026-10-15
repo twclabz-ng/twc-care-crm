@@ -17,10 +17,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="TWC CRM" />
 
-    <!-- WebSocket Error Guard for Preview Environments & Sandboxed iFrames -->
+    <!-- WebSocket Error Guard for Cloud Preview & Sandboxed iFrames -->
     <script>
       (function() {
         if (typeof window !== 'undefined') {
+          var originalConsoleError = console.error;
+          console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var firstArg = args[0] ? String(args[0]) : '';
+            if (
+              firstArg.indexOf('[vite] failed to connect to websocket') !== -1 ||
+              firstArg.indexOf('WebSocket closed without opened') !== -1 ||
+              firstArg.indexOf('failed to connect to websocket') !== -1
+            ) {
+              return;
+            }
+            return originalConsoleError.apply(console, args);
+          };
+
           window.addEventListener('error', function(event) {
             if (event && event.message && (
               event.message.indexOf('WebSocket') !== -1 ||
@@ -36,19 +50,43 @@
             var NativeWS = window.WebSocket;
             if (NativeWS) {
               window.WebSocket = function(url, protocols) {
+                if (protocols === 'vite-hmr' || protocols === 'vite-ping' || (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1))) {
+                  var listeners = {};
+                  var mockSocket = {
+                    readyState: 1,
+                    url: url,
+                    protocol: typeof protocols === 'string' ? protocols : 'vite-hmr',
+                    addEventListener: function(type, fn) {
+                      listeners[type] = listeners[type] || [];
+                      listeners[type].push(fn);
+                      if (type === 'open') {
+                        setTimeout(function() { fn({ type: 'open' }); }, 10);
+                      }
+                    },
+                    removeEventListener: function(type, fn) {
+                      if (!listeners[type]) return;
+                      listeners[type] = listeners[type].filter(function(cb) { return cb !== fn; });
+                    },
+                    send: function() {},
+                    close: function() {
+                      mockSocket.readyState = 3;
+                      if (listeners['close']) {
+                        listeners['close'].forEach(function(fn) { fn({ type: 'close', wasClean: true }); });
+                      }
+                    }
+                  };
+                  return mockSocket;
+                }
+
                 try {
-                  var instance = protocols ? new NativeWS(url, protocols) : new NativeWS(url);
-                  instance.addEventListener('error', function(err) {
-                    if (err && err.stopPropagation) err.stopPropagation();
-                  });
-                  return instance;
+                  return protocols ? new NativeWS(url, protocols) : new NativeWS(url);
                 } catch (e) {
                   return {
+                    readyState: 3,
                     addEventListener: function() {},
                     removeEventListener: function() {},
                     send: function() {},
-                    close: function() {},
-                    readyState: 3
+                    close: function() {}
                   };
                 }
               };
@@ -63,7 +101,7 @@
       })();
     </script>
 
-    <!-- PWA Icons & Manifest (Relative for GitHub Pages Subpath Resilience) -->
+    <!-- PWA Icons & Manifest (Relative paths for GitHub Pages Subpath Resilience) -->
     <link rel="icon" type="image/svg+xml" href="./icon.svg" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <link rel="manifest" href="./manifest.json" />
@@ -76,11 +114,18 @@
   <body class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#045d6e] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <noscript>
-      <div style="padding: 24px; text-align: center; font-family: sans-serif; color: #045d6e;">
-        <h2>TWC CareCRM Requires JavaScript</h2>
-        <p>Please enable JavaScript to access the hospital management and sales pipeline PWA.</p>
-      </div>
-    </noscript>
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).then(function(reg) {
+            console.log('TWC CareCRM ServiceWorker registered with scope: ', reg.scope);
+          }).catch(function(err) {
+            console.log('TWC CareCRM ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
